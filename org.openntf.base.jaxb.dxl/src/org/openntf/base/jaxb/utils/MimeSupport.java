@@ -1,12 +1,8 @@
 package org.openntf.base.jaxb.utils;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -15,9 +11,13 @@ import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.stream.EntityState;
 import org.apache.james.mime4j.stream.Field;
 import org.apache.james.mime4j.stream.MimeTokenStream;
+import org.cyberneko.html.parsers.DOMParser;
 import org.openntf.base.jaxb.dxl.Document;
 import org.openntf.base.jaxb.dxl.Item;
 import org.openntf.base.mime.MimeContainer;
+import org.openntf.base.mime.MimeElement;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.ibm.commons.util.StringUtil;
 import com.ibm.commons.util.io.base64.Base64;
@@ -47,38 +47,23 @@ public enum MimeSupport {
 		}
 	}
 
-	public String getHTMLFromMimeString(String mimeValue) throws IOException, MimeException {
-		MimeTokenStream stream = new MimeTokenStream();
-		stream.parse(new ByteArrayInputStream(mimeValue.getBytes("UTF-8")));
-		for (EntityState state = stream.getState(); state != EntityState.T_END_OF_STREAM; state = stream.next()) {
-			switch (state) {
-			case T_BODY:
-				System.out.println("Body detected, contents = " + stream.getInputStream() + ", header data = " + stream.getBodyDescriptor());
-				break;
-			case T_FIELD:
-				System.out.println("Header field detected: " + stream.getField());
-				break;
-			case T_START_MULTIPART:
-				System.out.println("Multipart message detexted," + " header data = " + stream.getBodyDescriptor());
-			}
+	@SuppressWarnings("incomplete-switch")
+	public MimeContainer getMimeContainer(String mimeValue) throws IOException, MimeException, SAXException {
+		MimeContainer container = findHTMLContent(mimeValue);
+		if (container == null) {
+			throw new NullPointerException("No text/html part found");
 		}
-		return null;
-	}
-
-	public MimeContainer getMimeContainer(String mimeValue) throws IOException, MimeException {
-		MimeContainer container = null;
 		MimeTokenStream stream = new MimeTokenStream();
 		stream.parse(new ByteArrayInputStream(mimeValue.getBytes("UTF-8")));
 		Map<String, String> headers = new WeakHashMap<String, String>();
 		for (EntityState state = stream.getState(); state != EntityState.T_END_OF_STREAM; state = stream.next()) {
 			switch (state) {
 			case T_BODY:
-				headers = new WeakHashMap<String, String>();
 				if ("text/html".equals(stream.getBodyDescriptor().getMimeType())) {
-					container = MimeContainer.buildWithBodyStream(stream.getReader());
 				} else {
-					container.addMimeElement(headers, stream.getDecodedInputStream());
+					container.addMimeElement(headers, stream.getDecodedInputStream(), stream.getBodyDescriptor());
 				}
+				headers = new WeakHashMap<String, String>();
 				break;
 			case T_FIELD:
 				Field field = stream.getField();
@@ -91,4 +76,38 @@ public enum MimeSupport {
 		return container;
 	}
 
+	@SuppressWarnings("incomplete-switch")
+	private MimeContainer findHTMLContent(String mimeValue) throws IOException, MimeException, SAXException {
+		MimeTokenStream stream = new MimeTokenStream();
+		stream.parse(new ByteArrayInputStream(mimeValue.getBytes("UTF-8")));
+		for (EntityState state = stream.getState(); state != EntityState.T_END_OF_STREAM; state = stream.next()) {
+			switch (state) {
+			case T_BODY:
+				if ("text/html".equals(stream.getBodyDescriptor().getMimeType())) {
+					MimeContainer container = MimeContainer.buildWithBodyStream(stream.getReader());
+					DOMParser parser = new DOMParser();
+					InputSource is = new InputSource(new StringReader(container.getHTMLBody()));
+					parser.parse(is);
+					container.setHTMLDOM(parser.getDocument());
+					return container;
+				}
+				break;
+			}
+		}
+		return null;
+	}
+
+	public void checkElementsForMissingData(List<MimeElement> mimeElements, Document docConverted) {
+		for (MimeElement element : mimeElements) {
+			if (element.getHeaders().containsKey("Content-Transfer-Encoding") && "binary".equals(element.getHeaders().get("Content-Transfer-Encoding"))) {
+				for (Item item : docConverted.getItem()) {
+					if ("$File".equalsIgnoreCase(item.getName()) && item.getObject() != null && item.getObject().getFile() != null
+							&& item.getObject().getFile().getName().equalsIgnoreCase(element.getContent())) {
+						element.setBinaryData(item.getObject().getFile().getFiledata());
+					}
+				}
+			}
+		}
+
+	}
 }

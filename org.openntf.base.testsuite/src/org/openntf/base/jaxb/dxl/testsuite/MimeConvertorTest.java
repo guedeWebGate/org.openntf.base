@@ -65,7 +65,10 @@ public class MimeConvertorTest {
 	}
 	
 	public void print(Node node, String indent) {
-        System.out.println(indent+node.getClass().getName() +" /// "+ node.getNodeName() + (node instanceof Element ? "-->"+((Element)node).getNodeValue(): ""));
+        System.out.println(indent+node.getClass().getName() +" /// "+ node.getNodeName() + (node instanceof Element ? "-->"+((Element)node).getNodeValue(): node.getTextContent()));
+        if ("IMG".equals(node.getNodeName())) {
+        	System.out.println("..... IMG: "+ node.getAttributes().getNamedItem("src").getNodeValue());
+        }
         Node child = node.getFirstChild();
         while (child != null) {
             print(child, indent+" ");

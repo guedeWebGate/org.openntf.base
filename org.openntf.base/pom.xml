@@ -5,7 +5,8 @@
     <artifactId>org.openntf.base.parent</artifactId>
     <version>0.9.0-SNAPSHOT</version>
   </parent>
-  <groupId>org.openntf.base.jaxb.dxl.testsuite</groupId>
-  <artifactId>org.openntf.base.jaxb.dxl.testsuite</artifactId>
-  <packaging>eclipse-test-plugin</packaging>
+  <artifactId>org.openntf.base</artifactId>
+  <packaging>eclipse-plugin</packaging>
+  <name>OpenNTF Base plugin</name>
+  <description>This plugin has all the library stuff</description>
 </project>

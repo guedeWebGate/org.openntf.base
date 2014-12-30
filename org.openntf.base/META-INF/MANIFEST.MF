@@ -1,0 +1,13 @@
+Bundle-SymbolicName: org.openntf.base;singleton:=true
+Bundle-Version: 0.9.0.qualifier
+Bundle-Name: OpenNTF Base Plugin
+Bundle-Vendor: WebGate Consutling AG
+Require-Bundle: org.eclipse.core.runtime,
+ com.ibm.xsp.core,
+ org.openntf.base.jaxb.dxl;bundle-version="0.9.0",
+ org.openntf.base.lib.internal;bundle-version="0.9.0",
+ com.ibm.commons
+Bundle-ManifestVersion: 2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.openntf.base.BaseActivator

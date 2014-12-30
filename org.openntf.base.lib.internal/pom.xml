@@ -1,0 +1,15 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.openntf.base</groupId>
+		<artifactId>org.openntf.base.parent</artifactId>
+		<version>0.9.0-SNAPSHOT</version>
+	</parent>
+	<groupId>org.openntf.base.lib.internal</groupId>
+	<artifactId>org.openntf.base.lib.internal</artifactId>
+	<packaging>eclipse-plugin</packaging>
+	<name>OpenNTF Base Internal Libraries</name>
+	<description>Libraries for Internal (org.openntf.base scope) usage</description>
+
+</project>

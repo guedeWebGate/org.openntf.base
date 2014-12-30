@@ -204,5 +204,6 @@
 	<modules>
 		<module>org.openntf.base.jaxb.dxl</module>
 		<module>org.openntf.base.jaxb.dxl.testsuite</module>
+		<module>org.openntf.base.lib.internal</module>
 	</modules>
 </project>

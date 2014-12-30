@@ -1,5 +1,8 @@
 package org.openntf.base.jaxb.dxl.testsuite;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.InputStream;
 
 import org.junit.Test;
@@ -7,8 +10,6 @@ import org.openntf.base.jaxb.dxl.Document;
 import org.openntf.base.jaxb.dxl.Item;
 import org.openntf.base.jaxb.dxl.Richtext;
 import org.openntf.base.jaxb.utils.ConvertorFactory;
-
-import static org.junit.Assert.*;
 
 public class ConverterFactoryTest {
 
@@ -25,16 +26,15 @@ public class ConverterFactoryTest {
 		Document docConverted = ConvertorFactory.convert2DXLDocumentFromStream(isXML);
 		assertNotNull(docConverted);
 		Richtext richText = null;
-		System.out.println(docConverted.getItem().size());
-		System.out.println(docConverted.getNoteinfo());
-		System.out.println(docConverted.getUpdatedby());
+		Item itemFound = null;
 		for (Item itemcheck :docConverted.getItem()) {
-			System.out.println(itemcheck.getName());
 			if (itemcheck.getRichtext() != null){
+				itemFound = itemcheck;
 				richText = itemcheck.getRichtext();
 				break;
 			}
 		}
 		assertNotNull(richText);
+		assertEquals("bodyClient", itemFound.getName());
 	}
 }

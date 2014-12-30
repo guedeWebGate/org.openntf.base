@@ -6,6 +6,8 @@ Bundle-Vendor: WebGate Consulting AG
 Bundle-ActivationPolicy: lazy
 Bundle-SymbolicName: org.openntf.base.jaxb.dxl;singleton=true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.eclipse.core.runtime
+Require-Bundle: org.eclipse.core.runtime,
+ com.ibm.commons,
+ org.openntf.base.lib.internal;visibility:=reexport
 Bundle-Activator: org.openntf.base.jaxb.dxl.DXLActivator
 

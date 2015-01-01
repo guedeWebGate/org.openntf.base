@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.stream.EntityState;
 import org.apache.james.mime4j.stream.Field;
@@ -48,8 +49,8 @@ public enum MimeSupport {
 	}
 
 	@SuppressWarnings("incomplete-switch")
-	public MimeContainer getMimeContainer(String mimeValue) throws IOException, MimeException, SAXException {
-		MimeContainer container = findHTMLContent(mimeValue);
+	public MimeContainer getMimeContainer(String mimeValue, Document docConverted) throws IOException, MimeException, SAXException {
+		MimeContainer container = findHTMLContent(mimeValue, docConverted);
 		if (container == null) {
 			throw new NullPointerException("No text/html part found");
 		}
@@ -77,21 +78,35 @@ public enum MimeSupport {
 	}
 
 	@SuppressWarnings("incomplete-switch")
-	private MimeContainer findHTMLContent(String mimeValue) throws IOException, MimeException, SAXException {
+	private MimeContainer findHTMLContent(String mimeValue, Document docConverted) throws IOException, MimeException, SAXException {
 		MimeTokenStream stream = new MimeTokenStream();
 		stream.parse(new ByteArrayInputStream(mimeValue.getBytes("UTF-8")));
 		for (EntityState state = stream.getState(); state != EntityState.T_END_OF_STREAM; state = stream.next()) {
 			switch (state) {
 			case T_BODY:
 				if ("text/html".equals(stream.getBodyDescriptor().getMimeType())) {
-					MimeContainer container = MimeContainer.buildWithBodyStream(stream.getReader());
-					DOMParser parser = new DOMParser();
-					InputSource is = new InputSource(new StringReader(container.getHTMLBody()));
-					parser.parse(is);
-					container.setHTMLDOM(parser.getDocument());
-					return container;
+					String content = IOUtils.toString(stream.getReader());
+					String html = content;
+					if ("mime.htm".equalsIgnoreCase(content)) {
+						html = searchMimeHTM(docConverted);
+					}
+					if (html != null) {
+						DOMParser parser = new DOMParser();
+						InputSource is = new InputSource(new StringReader(html));
+						parser.parse(is);
+						return MimeContainer.buildWithBodyAndDom(html, parser.getDocument());
+					}
 				}
 				break;
+			}
+		}
+		return null;
+	}
+
+	private String searchMimeHTM(Document docConverted) throws IOException {
+		for (Item item : docConverted.getItem()) {
+			if ("$File".equalsIgnoreCase(item.getName()) && item.getObject() != null && item.getObject().getFile() != null && item.getObject().getFile().getName().equalsIgnoreCase("mime.htm")) {
+				return IOUtils.toString(item.getObject().getFile().getFiledata(), "UTF-8");
 			}
 		}
 		return null;

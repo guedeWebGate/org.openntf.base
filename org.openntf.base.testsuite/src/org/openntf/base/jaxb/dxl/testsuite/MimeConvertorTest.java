@@ -27,52 +27,85 @@ public class MimeConvertorTest {
 		String mimeValue = MimeSupport.INSTANCE.getMimeStringFromDocument(docConverted, "bodyXPages");
 		assertNotNull(mimeValue);
 	}
-	
+
 	@Test
 	public void buildMimeMultiPart() throws IOException, MimeException, SAXException {
 		InputStream isXML = ConverterFactoryTest.class.getResourceAsStream("dxl-document-test-nosys.xml");
 		Document docConverted = ConvertorFactory.convert2DXLDocumentFromStream(isXML);
 		assertNotNull(docConverted);
 		String mimeValue = MimeSupport.INSTANCE.getMimeStringFromDocument(docConverted, "bodyXPages");
-		MimeContainer container =MimeSupport.INSTANCE.getMimeContainer(mimeValue);
+		MimeContainer container = MimeSupport.INSTANCE.getMimeContainer(mimeValue, docConverted);
 		assertNotNull(container);
 		assertNotNull(container.getHTMLBody());
 		assertNotNull(container.getMimeElements());
 		assertFalse(container.getMimeElements().isEmpty());
 		assertNotNull(container.getHTMLDOM());
-		print(container.getHTMLDOM(),"");
 	}
-	
+
 	@Test
 	public void getRawDataToMimeElement() throws IOException, MimeException, SAXException {
 		InputStream isXML = ConverterFactoryTest.class.getResourceAsStream("dxl-document-test-nosys.xml");
 		Document docConverted = ConvertorFactory.convert2DXLDocumentFromStream(isXML);
 		assertNotNull(docConverted);
 		String mimeValue = MimeSupport.INSTANCE.getMimeStringFromDocument(docConverted, "bodyXPages");
-		MimeContainer container =MimeSupport.INSTANCE.getMimeContainer(mimeValue);
+		MimeContainer container = MimeSupport.INSTANCE.getMimeContainer(mimeValue, docConverted);
 		assertNotNull(container);
 		assertNotNull(container.getHTMLBody());
 		assertNotNull(container.getMimeElements());
 		assertFalse(container.getMimeElements().isEmpty());
 		assertNotNull(container.getHTMLDOM());
 		MimeSupport.INSTANCE.checkElementsForMissingData(container.getMimeElements(), docConverted);
-		for (MimeElement element: container.getMimeElements()){
+		for (MimeElement element : container.getMimeElements()) {
 			if ("<02>".equals(element.getHeaders().get("Content-ID"))) {
 				assertNotNull(element.getBinaryData());
 			}
 		}
-		
+
 	}
-	
+
+	@Test
+	public void testBuildHTMLPartWithMime_Htm() throws IOException, MimeException, SAXException {
+		InputStream isXML = ConverterFactoryTest.class.getResourceAsStream("orange-document-nosys.xml");
+		Document docConverted = ConvertorFactory.convert2DXLDocumentFromStream(isXML);
+		assertNotNull(docConverted);
+		String mimeValue = MimeSupport.INSTANCE.getMimeStringFromDocument(docConverted, "Body");
+		//System.out.println(mimeValue);
+		MimeContainer container = MimeSupport.INSTANCE.getMimeContainer(mimeValue, docConverted);
+		assertNotNull(container);
+		assertNotNull(container.getHTMLBody());
+		assertNotNull(container.getMimeElements());
+		assertFalse(container.getMimeElements().isEmpty());
+		assertNotNull(container.getHTMLDOM());
+		//System.out.println(container.getHTMLBody());
+		//print(container.getHTMLDOM(), "");
+	}
+
+	@Test
+	public void testBuildHTMLPartWithSpezEncoding() throws IOException, MimeException, SAXException {
+		InputStream isXML = ConverterFactoryTest.class.getResourceAsStream("champion-document-nosys.xml");
+		Document docConverted = ConvertorFactory.convert2DXLDocumentFromStream(isXML);
+		assertNotNull(docConverted);
+		String mimeValue = MimeSupport.INSTANCE.getMimeStringFromDocument(docConverted, "Body");
+		//System.out.println(mimeValue);
+		MimeContainer container = MimeSupport.INSTANCE.getMimeContainer(mimeValue, docConverted);
+		assertNotNull(container);
+		assertNotNull(container.getHTMLBody());
+		assertNotNull(container.getMimeElements());
+		assertFalse(container.getMimeElements().isEmpty());
+		assertNotNull(container.getHTMLDOM());
+		//System.out.println(container.getHTMLBody());
+		//print(container.getHTMLDOM(), "");
+	}
+
 	public void print(Node node, String indent) {
-        System.out.println(indent+node.getClass().getName() +" /// "+ node.getNodeName() + (node instanceof Element ? "-->"+((Element)node).getNodeValue(): node.getTextContent()));
-        if ("IMG".equals(node.getNodeName())) {
-        	System.out.println("..... IMG: "+ node.getAttributes().getNamedItem("src").getNodeValue());
-        }
-        Node child = node.getFirstChild();
-        while (child != null) {
-            print(child, indent+" ");
-            child = child.getNextSibling();
-        }
-    }
+		System.out.println(indent + node.getClass().getName() + " /// " + node.getNodeName() + (node instanceof Element ? "-->" + ((Element) node).getNodeValue() : node.getTextContent()));
+		if ("IMG".equals(node.getNodeName())) {
+			System.out.println("..... IMG: " + node.getAttributes().getNamedItem("src").getNodeValue());
+		}
+		Node child = node.getFirstChild();
+		while (child != null) {
+			print(child, indent + " ");
+			child = child.getNextSibling();
+		}
+	}
 }
